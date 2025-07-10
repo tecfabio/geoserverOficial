@@ -195,13 +195,46 @@ docker run -it -p 80:8080 \
 
 ## How to enable HTTPS?
 
-To enable HTTPS, mount a JKS file to the container (ex. `/opt/keystore.jks`) and provide the following environment
-variables:
+The GeoServer Docker image includes built-in SSL/HTTPS support. For detailed SSL configuration, see the [SSL Configuration Guide](SSL-GUIDE.md).
+
+### Quick SSL Setup for Development
+
+1. **Generate a self-signed certificate:**
+   ```bash
+   ./generate-ssl-cert.sh
+   ```
+
+2. **Run with SSL using Docker Compose:**
+   ```bash
+   docker-compose -f docker-compose-ssl.yml up -d
+   ```
+
+3. **Access GeoServer securely:**
+   - HTTPS: https://localhost:443/geoserver
+   - HTTP: http://localhost:80/geoserver (redirects to HTTPS)
+
+### Manual SSL Configuration
+
+To enable HTTPS manually, mount a JKS file to the container and provide the following environment variables:
 
 * ``HTTPS_ENABLED`` to `true`
 * ``HTTPS_KEYSTORE_FILE`` (defaults to `/opt/keystore.jks`)
 * ``HTTPS_KEYSTORE_PASSWORD`` (defaults to `changeit`)
 * ``HTTPS_KEY_ALIAS`` (defaults to `server`)
+
+Example:
+```bash
+docker run -d \
+  -p 80:8080 -p 443:8443 \
+  -v $(pwd)/ssl:/opt/ssl:Z \
+  -e HTTPS_ENABLED=true \
+  -e HTTPS_KEYSTORE_FILE=/opt/ssl/keystore.jks \
+  -e HTTPS_KEYSTORE_PASSWORD=geoserver \
+  -e HTTPS_KEY_ALIAS=geoserver \
+  docker.osgeo.org/geoserver:2.27.0
+```
+
+For production SSL setup, custom certificates, and advanced configuration, see the complete [SSL Configuration Guide](SSL-GUIDE.md).
 
 ## How to run it as a non-privileged user ?
 

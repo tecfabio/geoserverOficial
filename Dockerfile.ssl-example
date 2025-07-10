@@ -1,0 +1,39 @@
+# Example: GeoServer with SSL Configuration
+# This Dockerfile demonstrates how to extend the base GeoServer image with SSL
+# Based on the existing Dockerfile with additional SSL-focused configuration
+
+# Use the existing GeoServer image as base
+FROM docker.osgeo.org/geoserver:2.27.0
+
+# Maintainer information
+LABEL maintainer="GeoServer SSL Example"
+LABEL description="GeoServer with SSL/HTTPS configuration example"
+
+# SSL-related environment variables with defaults
+ENV HTTPS_ENABLED=false
+ENV HTTPS_KEYSTORE_FILE=/opt/ssl/keystore.jks
+ENV HTTPS_KEYSTORE_PASSWORD=changeit
+ENV HTTPS_KEY_ALIAS=server
+
+# Create SSL directory
+RUN mkdir -p /opt/ssl && \
+    chown -R tomcat:tomcat /opt/ssl || true
+
+# Copy SSL configuration files if they exist
+# Note: In practice, you would mount certificates as volumes
+COPY ssl/ /opt/ssl/
+
+# Expose both HTTP and HTTPS ports
+EXPOSE 8080 8443
+
+# The startup script from the base image already handles SSL configuration
+# when HTTPS_ENABLED=true, so no additional changes are needed
+
+# Example usage:
+# docker build -t geoserver-ssl .
+# docker run -d -p 80:8080 -p 443:8443 \
+#   -e HTTPS_ENABLED=true \
+#   -e HTTPS_KEYSTORE_FILE=/opt/ssl/keystore.jks \
+#   -e HTTPS_KEYSTORE_PASSWORD=geoserver \
+#   -e HTTPS_KEY_ALIAS=geoserver \
+#   geoserver-ssl
